@@ -1,20 +1,26 @@
-const Discord = require("discord.js");
-const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES"] })
-const { Events } = require("discord.js/src/util/Constants.js");
-
 require("dotenv").config();
+const {Client, Intents, Collection} = require("discord.js");
+const client = new Client({
+    intents: [
+        Intents.FLAGS.GUILDS,
+        Intents.FLAGS.GUILD_MESSAGES,
+    ] 
+    });
+
+const fs = require("fs");
+const { REST } = require("@discordjs/rest");
+const { Routes } = require("discord-api-types/v10");
+const { Events } = require("discord.js/src/util/Constants.js");
 
 const BOT_PREFIX = process.env.BOT_PREFIX;
 const caseSensitive = true;
 
-client.login(process.env.TOKEN);
 
 client.on("ready", () => {
 
     registerCommands();
 });
-
-client.on("message", message => {
+client.on("messageCreate", message => {
     const guild = message.guild;
 
     if (!guild || !guild.available) {
@@ -24,14 +30,13 @@ client.on("message", message => {
     handleCommand(client, guild, message);
 });
 
-
-
 const commands = new Map();
 
 const preCommands = [
-    require("./Commands/CommandAvatar.js")
+    require("./Commands/CommandAvatar.js"),
+    require("./Commands/CommandIslands.js"),
+    require("./Commands/CommandLinks.js")
 ];
-
 function registerCommands() {
     if (Array.isArray(preCommands)) {
         for (let i = 0; i < preCommands.length; i++) {
@@ -57,6 +62,7 @@ function registerCommands() {
         }
     }
 }
+
 function handleCommand(client, guild, message) {
     const isCommand = caseSensitive ? message.content.startsWith(BOT_PREFIX) : message.content.toLowerCase().statsWith(BOT_PREFIX);
 
@@ -80,3 +86,5 @@ function handleCommand(client, guild, message) {
     }
     
 } 
+
+client.login(process.env.TOKEN);
